@@ -103,9 +103,18 @@ pub mod aero_chain {
     }
 
     pub fn cancel_flight(ctx: Context<CancelFlight>) -> Result<()> {
-        require!(ctx.accounts.flight.active_bookings == 0, AeroChainError::ActiveBookingsRemain);
-        ctx.accounts.flight.status = FlightStatus::Cancelled;
-        Ok(())
+    require!(
+        ctx.accounts.flight.status == FlightStatus::Scheduled,
+        AeroChainError::FlightAlreadyCancelled
+    );
+
+    require!(
+        ctx.accounts.flight.active_bookings == 0,
+        AeroChainError::ActiveBookingsRemain
+    );
+
+    ctx.accounts.flight.status = FlightStatus::Cancelled;
+    Ok(())
     }
 }
 
@@ -120,8 +129,10 @@ pub struct CreateFlight<'info> {
         bump
     )]
     pub flight: Account<'info, Flight>,
+
     #[account(mut)]
     pub authority: Signer<'info>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -144,7 +155,8 @@ pub struct BookPassenger<'info> {
     #[account(
         mut,
         seeds = [b"flight", flight.flight_id.to_le_bytes().as_ref()],
-        bump = flight.bump
+        bump = flight.bump,
+        constraint = flight.active_bookings < MAX_PASSENGERS @ AeroChainError::FlightFull
     )]
     pub flight: Account<'info, Flight>,
     #[account(
