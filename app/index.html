@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroChain | Decentralized Aviation</title>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <span class="brand-icon">✈</span>
+            <span>AERO<span class="accent">CHAIN</span></span>
+        </div>
+
+        <nav>
+            <a class="active" href="#">Dashboard</a>
+            <a href="#flights">Explore Flights</a>
+            <a href="#bookings">My Bookings</a>
+            <a href="#admin">Administration</a>
+        </nav>
+
+        <div class="network-card">
+            <span class="status-dot"></span>
+            Solana Devnet
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">DECENTRALIZED FLIGHT BOOKING</p>
+                <h1>Welcome to AeroChain</h1>
+            </div>
+
+            <button id="connectWallet" class="wallet-button">
+                Connect Wallet
+            </button>
+        </header>
+
+        <section class="hero">
+            <div>
+                <p class="eyebrow">THE FUTURE OF AVIATION</p>
+                <h2>Book your flight.<br>
+                    <span class="accent">Own your journey.</span>
+                </h2>
+                <p class="hero-description">
+                    Transparent flight reservations powered by Solana blockchain.
+                </p>
+            </div>
+
+            <div class="hero-symbol">✈</div>
+        </section>
+
+        <section class="stats">
+            <article class="stat-card">
+                <p>Network</p>
+                <h3>Solana</h3>
+                <span>Devnet</span>
+            </article>
+
+            <article class="stat-card">
+                <p>Maximum Capacity</p>
+                <h3>09</h3>
+                <span>Passengers per flight</span>
+            </article>
+
+            <article class="stat-card">
+                <p>Wallet Balance</p>
+                <h3 id="walletBalance">-- SOL</h3>
+                <span id="walletStatus">Wallet disconnected</span>
+            </article>
+        </section>
+
+        <section id="flights" class="content-section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">DISCOVER</p>
+                    <h2>Explore Flights</h2>
+                </div>
+                <span class="tag">On-chain reservations</span>
+            </div>
+
+            <div class="empty-state">
+                <div class="empty-icon">✈</div>
+                <h3>Flight information</h3>
+                <p>
+                    Available flights will appear here once connected
+                    to the AeroChain smart contract.
+                </p>
+            </div>
+        </section>
+
+        <section id="bookings" class="content-section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">YOUR ACTIVITY</p>
+                    <h2>My Bookings</h2>
+                </div>
+            </div>
+
+            <div class="empty-state">
+                <h3>No bookings yet</h3>
+                <p>Your blockchain reservations will appear here.</p>
+            </div>
+        </section>
+
+        <footer>
+            <span>AEROCHAIN © 2026</span>
+            <span>Powered by Solana</span>
+        </footer>
+
+    </main>
+
+    <script type="module" src="./js/app.js"></script>
+</body>
+</html>
