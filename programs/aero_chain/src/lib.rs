@@ -42,29 +42,14 @@ pub mod aero_chain {
     }
 
     pub fn book_passenger(
-    ctx: Context<BookPassenger>,
-    seat_number: u8,
-    passenger_name: String,
+        ctx: Context<BookPassenger>,
+        seat_number: u8,
+        passenger_name: String,
     ) -> Result<()> {
-        require!(
-        ctx.accounts.flight.active_bookings < MAX_PASSENGERS,
-        AeroChainError::FlightFull
-        );
-
-        require!(
-        (1..=MAX_PASSENGERS).contains(&seat_number),
-        AeroChainError::InvalidSeat
-        );
-
-        require!(
-        passenger_name.as_bytes().len() <= MAX_PASSENGER_NAME_LEN,
-        AeroChainError::PassengerNameTooLong
-        );
-
-        require!(
-        ctx.accounts.flight.status == FlightStatus::Scheduled,
-        AeroChainError::FlightNotBookable
-        );
+        require!((1..=MAX_PASSENGERS).contains(&seat_number), AeroChainError::InvalidSeat);
+        require!(passenger_name.as_bytes().len() <= MAX_PASSENGER_NAME_LEN, AeroChainError::PassengerNameTooLong);
+        require!(ctx.accounts.flight.status == FlightStatus::Scheduled, AeroChainError::FlightNotBookable);
+        require!(ctx.accounts.flight.active_bookings < MAX_PASSENGERS, AeroChainError::FlightFull);
 
         let passenger = &mut ctx.accounts.passenger;
         passenger.flight = ctx.accounts.flight.key();
@@ -80,9 +65,7 @@ pub mod aero_chain {
         seat.bump = ctx.bumps.seat;
 
         ctx.accounts.flight.active_bookings = ctx.accounts.flight.active_bookings
-        .checked_add(1)
-        .ok_or(AeroChainError::FlightFull)?;
-
+            .checked_add(1).ok_or(AeroChainError::FlightFull)?;
         Ok(())
     }
 
@@ -103,18 +86,9 @@ pub mod aero_chain {
     }
 
     pub fn cancel_flight(ctx: Context<CancelFlight>) -> Result<()> {
-    require!(
-        ctx.accounts.flight.status == FlightStatus::Scheduled,
-        AeroChainError::FlightAlreadyCancelled
-    );
-
-    require!(
-        ctx.accounts.flight.active_bookings == 0,
-        AeroChainError::ActiveBookingsRemain
-    );
-
-    ctx.accounts.flight.status = FlightStatus::Cancelled;
-    Ok(())
+        require!(ctx.accounts.flight.active_bookings == 0, AeroChainError::ActiveBookingsRemain);
+        ctx.accounts.flight.status = FlightStatus::Cancelled;
+        Ok(())
     }
 }
 
@@ -129,10 +103,8 @@ pub struct CreateFlight<'info> {
         bump
     )]
     pub flight: Account<'info, Flight>,
-
     #[account(mut)]
     pub authority: Signer<'info>,
-
     pub system_program: Program<'info, System>,
 }
 
@@ -149,14 +121,11 @@ pub struct UpdateFlight<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(seat_number: u8)]
 pub struct BookPassenger<'info> {
-    // Conserva aquí todas tus cuentas y validaciones actuales.
     #[account(
         mut,
         seeds = [b"flight", flight.flight_id.to_le_bytes().as_ref()],
-        bump = flight.bump,
-        constraint = flight.active_bookings < MAX_PASSENGERS @ AeroChainError::FlightFull
+        bump = flight.bump
     )]
     pub flight: Account<'info, Flight>,
     #[account(
