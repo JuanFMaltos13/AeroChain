@@ -569,11 +569,45 @@ async function createFlight(event: SubmitEvent): Promise<void> {
   }
 }
 
+let isAutoRefreshRunning = false;
+
+async function autoRefreshFlights(): Promise<void> {
+  if (!program || isAutoRefreshRunning) {
+    return;
+  }
+
+  const activeElement = document.activeElement;
+
+  if (
+    activeElement instanceof HTMLElement &&
+    activeElement.closest("#createFlightForm, .reservation-form")
+  ) {
+    return;
+  }
+
+  isAutoRefreshRunning = true;
+
+  try {
+    await loadFlights();
+  } catch (error) {
+    console.error("Automatic flight refresh failed:", error);
+  } finally {
+    isAutoRefreshRunning = false;
+  }
+}
+
 connectButton?.addEventListener("click", connectWallet);
 
 createFlightForm?.addEventListener("submit", createFlight);
 
 refreshFlightsButton?.addEventListener("click", loadFlights);
+
+const AUTO_REFRESH_INTERVAL_MS = 15_000;
+
+setInterval(() => {
+  void autoRefreshFlights();
+}, AUTO_REFRESH_INTERVAL_MS);
+
 
 const phantom = window.phantom?.solana ?? window.solana;
 
