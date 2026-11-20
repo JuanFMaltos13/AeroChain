@@ -101,9 +101,7 @@ async function loadFlights(): Promise<void> {
   flightsList.textContent = "Loading flights from Solana Devnet...";
 
   try {
-    // The IDL is loaded dynamically, so we use the runtime account namespace.
     const activeProgram = program as Program<any>;
-
     const flights = await (activeProgram.account as any).flight.all();
 
     flightsList.replaceChildren();
@@ -111,21 +109,15 @@ async function loadFlights(): Promise<void> {
     if (flights.length === 0) {
       const empty = document.createElement("div");
       empty.className = "empty-state";
-
-      const heading = document.createElement("h3");
-      heading.textContent = "No flights registered yet";
-
-      const description = document.createElement("p");
-      description.textContent =
-        "Create the first flight using the form above.";
-
-      empty.append(heading, description);
+      empty.innerHTML = "<h3>No flights registered yet</h3><p>Create the first flight using the form above.</p>";
       flightsList.appendChild(empty);
+      await loadMyBookings([]);
       return;
     }
 
     for (const item of flights) {
       const flight = item.account;
+      const occupiedSeats = flight.occupiedSeats as string[];
 
       const card = document.createElement("article");
       card.className = "flight-card";
@@ -134,24 +126,167 @@ async function loadFlights(): Promise<void> {
       heading.textContent = `Flight ${flight.flightNumber}`;
 
       const route = document.createElement("p");
-      route.textContent =
-        `${flight.origin} → ${flight.destination}`;
+      route.textContent = `${flight.origin} → ${flight.destination}`;
 
       const owner = document.createElement("p");
-      owner.textContent =
-        `Owner: ${flight.owner.toBase58()}`;
+      owner.textContent = `Owner: ${flight.owner.toBase58()}`;
 
       const seats = document.createElement("p");
-      seats.textContent =
-        `Occupied seats: ${flight.occupiedSeats.length} / 9`;
+      seats.textContent = `Occupied seats: ${occupiedSeats.length} / 9`;
 
       const reservations = document.createElement("p");
-      reservations.textContent =
-        `Reservations created: ${flight.reservationCounter}`;
+      reservations.textContent = `Reservations created: ${flight.reservationCounter}`;
 
       const address = document.createElement("p");
-      address.textContent =
-        `PDA: ${item.publicKey.toBase58()}`;
+      address.textContent = `PDA: ${item.publicKey.toBase58()}`;
+
+      const bookingForm = document.createElement("form");
+      bookingForm.className = "reservation-form";
+
+      const nameLabel = document.createElement("label");
+      nameLabel.textContent = "Passenger name";
+
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.maxLength = 30;
+      nameInput.required = true;
+      nameInput.placeholder = "Enter passenger name";
+      nameLabel.appendChild(nameInput);
+
+      const seatLabel = document.createElement("label");
+      seatLabel.textContent = "Select seat";
+
+      const seatSelect = document.createElement("select");
+      seatSelect.required = true;
+
+      const defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent = "Choose a seat";
+      defaultOption.disabled = true;
+      defaultOption.selected = true;
+      seatSelect.appendChild(defaultOption);
+
+      for (let seatNumber = 1; seatNumber <= 9; seatNumber++) {
+        const seat = String(seatNumber);
+        const option = document.createElement("option");
+        option.value = seat;
+        option.textContent = occupiedSeats.includes(seat)
+          ? `${seat} - Occupied`
+          : `${seat} - Available`;
+        option.disabled = occupiedSeats.includes(seat);
+        seatSelect.appendChild(option);
+      }
+
+      seatLabel.appendChild(seatSelect);
+
+      const reserveButton = document.createElement("button");
+      reserveButton.type = "submit";
+      reserveButton.textContent = "Reserve Seat";
+      reserveButton.disabled = !walletPublicKey || occupiedSeats.length >= 9;
+
+      const bookingMessage = document.createElement("p");
+      bookingMessage.className = "reservation-message";
+
+      bookingForm.append(
+        nameLabel,
+        seatLabel,
+        reserveButton,
+        bookingMessage
+      );
+
+      bookingForm.addEventListener("submit", async (event: SubmitEvent) => {
+        event.preventDefault();
+
+        if (!program || !walletPublicKey) {
+          bookingMessage.textContent = "Connect Phantom Wallet first.";
+          return;
+        }
+
+        const passengerName = nameInput.value.trim();
+        const seat = seatSelect.value;
+
+        if (!passengerName || passengerName.length > 30) {
+          bookingMessage.textContent = "Passenger name must contain 1–30 characters.";
+          return;
+        }
+
+        if (!/^[1-9]$/.test(seat)) {
+          bookingMessage.textContent = "Select a valid seat from 1 to 9.";
+          return;
+        }
+
+        reserveButton.disabled = true;
+        reserveButton.textContent = "Processing...";
+
+        try {
+          const currentProgram = program as Program<any>;
+
+          // Fetch the latest on-chain flight state before deriving the reservation PDA.
+          const latestFlight = await (currentProgram.account as any)
+            .flight.fetch(item.publicKey);
+
+          const latestOccupiedSeats = latestFlight.occupiedSeats as string[];
+
+          if (latestOccupiedSeats.includes(seat)) {
+            throw new Error(`Seat ${seat} has already been reserved.`);
+          }
+
+          if (latestFlight.reservations.length >= 9) {
+            throw new Error("This flight is fully booked.");
+          }
+
+          const counter = Number(latestFlight.reservationCounter);
+
+          if (!Number.isInteger(counter) || counter < 0 || counter > 65535) {
+            throw new Error("Invalid reservation counter.");
+          }
+
+          // Rust uses reservation_counter.to_le_bytes() (u16).
+          const counterBuffer = Buffer.alloc(2);
+          counterBuffer.writeUInt16LE(counter, 0);
+
+          const [reservationPda] = PublicKey.findProgramAddressSync(
+            [
+              Buffer.from("reservation"),
+              item.publicKey.toBuffer(),
+              counterBuffer
+            ],
+            currentProgram.programId
+          );
+
+          bookingMessage.textContent = "Approve the reservation in Phantom.";
+
+          const signature = await (currentProgram.methods as any)
+            .reserveSeat(passengerName, seat)
+            .accounts({
+              passenger: walletPublicKey,
+              flight: item.publicKey,
+              reservation: reservationPda,
+              systemProgram: SystemProgram.programId
+            })
+            .rpc();
+
+          console.log("Reservation PDA:", reservationPda.toBase58());
+          console.log("Reservation transaction:", signature);
+
+          bookingMessage.textContent =
+            `Reservation successful! Transaction: ${signature}`;
+
+          await updateWalletBalance();
+          await loadFlights();
+
+        } catch (error) {
+          console.error("Reservation error:", error);
+
+          const message =
+            error instanceof Error ? error.message : String(error);
+
+          bookingMessage.textContent = `Reservation failed: ${message}`;
+        } finally {
+          reserveButton.disabled = !walletPublicKey;
+          reserveButton.textContent = "Reserve Seat";
+        }
+      });
 
       card.append(
         heading,
@@ -159,19 +294,99 @@ async function loadFlights(): Promise<void> {
         owner,
         seats,
         reservations,
-        address
+        address,
+        bookingForm
       );
 
       flightsList.appendChild(card);
     }
 
     console.log("Flights loaded:", flights.length);
+    await loadMyBookings(flights);
 
   } catch (error) {
     console.error("Unable to load flights:", error);
-
     flightsList.textContent =
       "Unable to retrieve flights. Check the browser console.";
+  }
+}
+
+async function loadMyBookings(flights: any[]): Promise<void> {
+  const bookingsList = document.getElementById("myBookingsList");
+
+  if (!bookingsList) return;
+
+  bookingsList.replaceChildren();
+
+  if (!program || !walletPublicKey) {
+    bookingsList.textContent = "Connect your wallet to view your bookings.";
+    return;
+  }
+
+  try {
+    const activeProgram = program as Program<any>;
+
+    const allReservations = await (activeProgram.account as any)
+      .reservation.all();
+
+    const myReservations = allReservations.filter(
+      (item: any) => item.account.passenger.equals(walletPublicKey)
+    );
+
+    if (myReservations.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.innerHTML =
+        "<h3>No bookings yet</h3><p>Your blockchain reservations will appear here.</p>";
+      bookingsList.appendChild(empty);
+      return;
+    }
+
+    for (const item of myReservations) {
+      const reservation = item.account;
+
+      const associatedFlight = flights.find((flightItem: any) =>
+        flightItem.account.reservations.some(
+          (reservationKey: PublicKey) =>
+            reservationKey.equals(item.publicKey)
+        )
+      );
+
+      const card = document.createElement("article");
+      card.className = "flight-card";
+
+      const heading = document.createElement("h4");
+      heading.textContent = associatedFlight
+        ? `Flight ${associatedFlight.account.flightNumber}`
+        : "Flight reservation";
+
+      const passenger = document.createElement("p");
+      passenger.textContent = `Passenger: ${reservation.passengerName}`;
+
+      const seat = document.createElement("p");
+      seat.textContent = `Seat: ${reservation.seat}`;
+
+      const reservationId = document.createElement("p");
+      reservationId.textContent =
+        `Reservation ID: ${reservation.reservationId}`;
+
+      const route = document.createElement("p");
+      route.textContent = associatedFlight
+        ? `${associatedFlight.account.origin} → ${associatedFlight.account.destination}`
+        : "Flight details unavailable";
+
+      const address = document.createElement("p");
+      address.textContent = `Reservation PDA: ${item.publicKey.toBase58()}`;
+
+      card.append(heading, route, passenger, seat, reservationId, address);
+      bookingsList.appendChild(card);
+    }
+
+    console.log("My bookings loaded:", myReservations.length);
+
+  } catch (error) {
+    console.error("Unable to load bookings:", error);
+    bookingsList.textContent = "Unable to retrieve your bookings.";
   }
 }
 
@@ -386,6 +601,13 @@ phantom?.on?.("disconnect", () => {
 
   if (flightsList) {
     flightsList.textContent = "Connect your wallet to load flights.";
+  }
+
+  const bookingsList = document.getElementById("myBookingsList");
+
+  if (bookingsList) {
+    bookingsList.textContent =
+      "Connect your wallet to view your bookings.";
   }
 
   setFlightMessage("Wallet disconnected.");
