@@ -83,13 +83,59 @@
                 <span class="tag">On-chain reservations</span>
             </div>
 
-            <div class="empty-state">
-                <div class="empty-icon">✈</div>
-                <h3>Flight information</h3>
-                <p>
-                    Available flights will appear here once connected
-                    to the AeroChain smart contract.
+            <div class="flight-admin-card">
+                <h3>Create a New Flight</h3>
+                <p class="form-description">
+                    Register a flight directly on Solana Devnet.
                 </p>
+
+                <form id="createFlightForm" class="flight-form">
+                    <div class="form-grid">
+                        <label>
+                            Flight Number
+                            <input id="flightNumber" type="text"
+                                maxlength="10" placeholder="AC101" required>
+                        </label>
+
+                        <label>
+                            Origin
+                            <input id="flightOrigin" type="text"
+                                maxlength="30" placeholder="Mexico City" required>
+                        </label>
+
+                        <label>
+                            Destination
+                            <input id="flightDestination" type="text"
+                                maxlength="30" placeholder="New York" required>
+                        </label>
+                    </div>
+
+                    <button id="createFlightButton" class="action-button"
+                        type="submit" disabled>
+                        Connect Wallet to Create Flight
+                    </button>
+                </form>
+
+                <p id="flightMessage" class="form-message"
+                    role="status" aria-live="polite"></p>
+            </div>
+
+            <div class="flights-list-container">
+                <div class="flights-list-heading">
+                    <h3>Registered Flights</h3>
+                    <button id="refreshFlights" class="secondary-button"
+                        type="button">
+                        Refresh
+                    </button>
+                </div>
+
+                <div id="flightsList" class="flights-grid">
+                    <div class="empty-state">
+                        <div class="empty-icon">✈</div>
+                        <h3>No flights loaded</h3>
+                        <p>Connect your wallet to explore AeroChain flights.</p>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -114,6 +160,6 @@
 
     </main>
 
-    <script type="module" src="./js/app.js"></script>
+    <script type="module" src="./js/app.ts"></script>
 </body>
 </html>

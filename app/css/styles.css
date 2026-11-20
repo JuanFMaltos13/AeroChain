@@ -310,3 +310,139 @@ footer {
         flex-direction: column;
     }
 }
+
+/* AeroChain flight management */
+
+.flight-admin-card,
+.flights-list-container {
+    margin-top: 24px;
+    padding: 28px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+}
+
+.flight-admin-card h3,
+.flights-list-heading h3 {
+    font-size: 17px;
+}
+
+.form-description {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.flight-form {
+    margin-top: 24px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.form-grid input {
+    width: 100%;
+    padding: 13px;
+    background: #080f1e;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+}
+
+.form-grid input:focus {
+    outline: 1px solid var(--cyan);
+    border-color: var(--cyan);
+}
+
+.action-button,
+.secondary-button {
+    padding: 13px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.action-button {
+    margin-top: 22px;
+    background: linear-gradient(110deg, #087fba, #7252ed);
+    color: white;
+}
+
+.action-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.secondary-button {
+    background: #17243a;
+    border: 1px solid var(--border);
+    color: var(--cyan);
+}
+
+.form-message {
+    margin-top: 15px;
+    font-size: 13px;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+}
+
+.flights-list-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.flights-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 22px;
+}
+
+.flight-card {
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: #0c1322;
+}
+
+.flight-card h4 {
+    color: var(--cyan);
+    font-size: 17px;
+    margin-bottom: 15px;
+}
+
+.flight-card p {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 9px;
+    overflow-wrap: anywhere;
+}
+
+.flight-card strong {
+    color: var(--text);
+}
+
+@media (max-width: 850px) {
+    .form-grid,
+    .flights-grid {
+        grid-template-columns: 1fr;
+    }
+}
+

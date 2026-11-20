@@ -1,0 +1,506 @@
+{
+  "address": "E3Ai1odomZQjyXAbvy1bRpXuvXATELeYKZ7HVsShvg2C",
+  "metadata": {
+    "name": "aerochain",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Decentralized flight booking on Solana"
+  },
+  "instructions": [
+    {
+      "name": "cancel_reservation",
+      "discriminator": [
+        72,
+        162,
+        75,
+        180,
+        116,
+        157,
+        146,
+        172
+      ],
+      "accounts": [
+        {
+          "name": "passenger",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "reservation"
+          ]
+        },
+        {
+          "name": "flight",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  108,
+                  105,
+                  103,
+                  104,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flight.flight_number",
+                "account": "Flight"
+              },
+              {
+                "kind": "account",
+                "path": "flight.owner",
+                "account": "Flight"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reservation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flight"
+              },
+              {
+                "kind": "arg",
+                "path": "reservation_id"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "reservation_id",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "change_seat",
+      "discriminator": [
+        58,
+        149,
+        78,
+        31,
+        175,
+        111,
+        182,
+        225
+      ],
+      "accounts": [
+        {
+          "name": "passenger",
+          "signer": true,
+          "relations": [
+            "reservation"
+          ]
+        },
+        {
+          "name": "flight",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  108,
+                  105,
+                  103,
+                  104,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flight.flight_number",
+                "account": "Flight"
+              },
+              {
+                "kind": "account",
+                "path": "flight.owner",
+                "account": "Flight"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reservation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flight"
+              },
+              {
+                "kind": "arg",
+                "path": "reservation_id"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "reservation_id",
+          "type": "u16"
+        },
+        {
+          "name": "new_seat",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "create_flight",
+      "discriminator": [
+        66,
+        46,
+        33,
+        204,
+        219,
+        103,
+        231,
+        30
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "flight",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  108,
+                  105,
+                  103,
+                  104,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "flight_number"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "flight_number",
+          "type": "string"
+        },
+        {
+          "name": "origin",
+          "type": "string"
+        },
+        {
+          "name": "destination",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "reserve_seat",
+      "discriminator": [
+        42,
+        147,
+        222,
+        136,
+        162,
+        134,
+        183,
+        168
+      ],
+      "accounts": [
+        {
+          "name": "passenger",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "flight",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  108,
+                  105,
+                  103,
+                  104,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flight.flight_number",
+                "account": "Flight"
+              },
+              {
+                "kind": "account",
+                "path": "flight.owner",
+                "account": "Flight"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reservation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flight"
+              },
+              {
+                "kind": "account",
+                "path": "flight.reservation_counter",
+                "account": "Flight"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "passenger_name",
+          "type": "string"
+        },
+        {
+          "name": "seat",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Flight",
+      "discriminator": [
+        111,
+        194,
+        253,
+        178,
+        112,
+        233,
+        132,
+        253
+      ]
+    },
+    {
+      "name": "Reservation",
+      "discriminator": [
+        188,
+        235,
+        0,
+        111,
+        208,
+        253,
+        247,
+        212
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "FlightFull",
+      "msg": "The flight has reached its maximum capacity of 9 passengers."
+    },
+    {
+      "code": 6001,
+      "name": "SeatOccupied",
+      "msg": "The selected seat is already occupied."
+    },
+    {
+      "code": 6002,
+      "name": "ReservationNotFound",
+      "msg": "The reservation does not exist or is not registered."
+    },
+    {
+      "code": 6003,
+      "name": "UnauthorizedPassenger",
+      "msg": "The wallet is not authorized to manage this reservation."
+    },
+    {
+      "code": 6004,
+      "name": "SeatSame",
+      "msg": "The new seat is the same as the current seat."
+    },
+    {
+      "code": 6005,
+      "name": "InvalidSeat",
+      "msg": "The seat format is invalid. Maximum length is 3 characters."
+    },
+    {
+      "code": 6006,
+      "name": "InvalidPassengerName",
+      "msg": "The passenger name is invalid. Maximum length is 30 characters."
+    },
+    {
+      "code": 6007,
+      "name": "InvalidFlightNumber",
+      "msg": "The flight number is invalid. Maximum length is 10 characters."
+    },
+    {
+      "code": 6008,
+      "name": "InvalidOrigin",
+      "msg": "The origin is invalid. Maximum length is 30 characters."
+    },
+    {
+      "code": 6009,
+      "name": "InvalidDestination",
+      "msg": "The destination is invalid. Maximum length is 30 characters."
+    },
+    {
+      "code": 6010,
+      "name": "CounterOverflow",
+      "msg": "The reservation counter overflowed."
+    }
+  ],
+  "types": [
+    {
+      "name": "Flight",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "flight_number",
+            "type": "string"
+          },
+          {
+            "name": "origin",
+            "type": "string"
+          },
+          {
+            "name": "destination",
+            "type": "string"
+          },
+          {
+            "name": "reservations",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "occupied_seats",
+            "type": {
+              "vec": "string"
+            }
+          },
+          {
+            "name": "reservation_counter",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reservation",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "reservation_id",
+            "type": "u16"
+          },
+          {
+            "name": "passenger",
+            "type": "pubkey"
+          },
+          {
+            "name": "passenger_name",
+            "type": "string"
+          },
+          {
+            "name": "seat",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ]
+}
